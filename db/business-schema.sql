@@ -4,10 +4,10 @@ CREATE DATABaSE businessDB;
 
 USE businessDB;
 
-CREATE TABLE department (
+CREATE TABLE departments (
 
     id INT auto_increment,
-    name VARCHAR(30),
+    department VARCHAR(30),
     primary key (ID)
 );
 
