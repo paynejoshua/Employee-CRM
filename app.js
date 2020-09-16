@@ -23,7 +23,7 @@ mainFunction = () => {
     .prompt(
       {
         name: "newInput",
-        type: "list",
+        type: "rawlist",
         message: "What would you like to do?",
         choices: [
           "Add New Department",
@@ -100,7 +100,7 @@ viewDepartment = () => {
 
 addRole = () => {
   db.query("SELECT * FROM departments", function (err, res) {
-    if(err) throw err;
+    if (err) throw err;
     let departmentChoice = [];
     for (let i = 0; i < res.length; i++) {
       departmentChoice.push(res[i].department);
@@ -120,7 +120,7 @@ addRole = () => {
           },
           {
             name: "department_ID",
-            type: "list",
+            type: "rawlist",
             message: "What department does this role belong to?",
             choices: departmentChoice
           }
@@ -164,22 +164,22 @@ updateRole = () => {
         [
           {
             name: "roleTitle",
-            type: "list",
+            type: "rawlist",
             message: "What Role would you like to update?",
             choices: roleChoice
           },
           {
             name: "roleOptions",
-            type: "list",
+            type: "rawlist",
             message: "What would you like to update?",
             choices: ["Title", "Salary", "Both"]
           }
         ]
       )
-      .then(function(answer) {
+      .then(function (answer) {
         let chosenRole;
-        for(let i = 0; i < res.length; i++) {
-          if(res[i].title === answer.roleTitle) {
+        for (let i = 0; i < res.length; i++) {
+          if (res[i].title === answer.roleTitle) {
             chosenRole = res[i];
           }
         }
@@ -195,7 +195,7 @@ updateRole = () => {
                   }
                 ]
               )
-              .then(function(answer) {
+              .then(function (answer) {
                 db.query(
                   "UPDATE role SET ? WHERE ?",
                   [
@@ -206,8 +206,8 @@ updateRole = () => {
                       id: chosenRole.id
                     }
                   ])
-                  viewRole();
-                  mainFunction();
+                viewRole();
+                mainFunction();
               });
             break;
           case "Salary":
@@ -221,7 +221,7 @@ updateRole = () => {
                   }
                 ]
               )
-              .then(function(answer) {
+              .then(function (answer) {
                 db.query(
                   "UPDATE role SET ? WHERE ?",
                   [
@@ -232,8 +232,8 @@ updateRole = () => {
                       id: chosenRole.id
                     }
                   ])
-                  viewRole();
-                  mainFunction();
+                viewRole();
+                mainFunction();
               })
             break;
 
@@ -253,7 +253,7 @@ updateRole = () => {
                   }
                 ]
               )
-              .then(function(answer) {
+              .then(function (answer) {
                 db.query(
                   "UPDATE role SET ? WHERE ?",
                   [
@@ -270,7 +270,7 @@ updateRole = () => {
                 mainFunction();
               })
             break;
-          
+
         }
       })
 
@@ -279,79 +279,169 @@ updateRole = () => {
 }
 
 addEmployee = () => {
-  db.query("SELECT * FROM role", function(err, res) {
-      if(err) throw err;
-      let roleChoice = [];
-      for (let i = 0; i < res.length; i++) {
-          roleChoice.push(res[i].title);
-      }
-  inquirer
-    .prompt(
-      [
-      {
-        name: "firstName",
-        type: "input",
-        message: "What is this employees first name?"
-      },
-      {
-          name: "lastName",
-          type: "input",
-          message: "What is this employees last name?"
-      },
-      {
-          name: "role",
-          type: "list",
-          message: "What is this employees role?",
-          choices: roleChoice
-      },
-      {
-        name: "manager",
-        type: "list",
-        message: "Who is this employees manager?",
-        choices: managerChoice()
+  db.query("SELECT * FROM role", function (err, res) {
+    if (err) throw err;
+    let roleChoice = [];
+    for (let i = 0; i < res.length; i++) {
+      roleChoice.push(res[i].title);
     }
-    ]
-    )
-    .then(function (answer) {
-      for (let i = 0; i < res.length; i++) {
-          if (res[i].title === answer.role) {
+    db.query("SELECT * FROM employee", function (err, employees) {
+
+      if (err) throw err;
+      let managers = []
+      let i = 0;
+      let resultsCount = employees.length;
+      for (i; i < resultsCount; i++) {
+        managers.push(employees[i].first_name + " " + employees[i].last_name)
+
+      }
+      inquirer
+        .prompt(
+          [
+            {
+              name: "firstName",
+              type: "input",
+              message: "What is this employees first name?"
+            },
+            {
+              name: "lastName",
+              type: "input",
+              message: "What is this employees last name?"
+            },
+            {
+              name: "role",
+              type: "rawlist",
+              message: "What is this employees role?",
+              choices: roleChoice
+            },
+            {
+              name: "manager",
+              type: "rawlist",
+              message: "Who is this employees manager?",
+              choices: managers
+
+            }
+          ]
+        )
+        .then(function (answer) {
+            let roleId;
+            let managerId;
+            // Match the role
+            for (let i = 0; i < res.length; i++)
+            {
+                if (res[i].title === answer.role)
+                {
+                    roleId = res[i].id;
+                    break;
+                }
+            }
+            // Match the manager
+            for (let i = 0; i < employees.length; i++)
+            {
+                let managerName = employees[i].first_name +" "+ employees[i].last_name;
+                if (managerName === answer.manager)
+                {
+                    managerId = employees[i].id;
+                    break;
+                }
+            }
               db.query("INSERT INTO employee SET ?",
-        {
-          first_name: answer.firstName,
-          last_name: answer.lastName,
-          role_id: res[i].id,
-          manager_id: answer.SOMETHING
-        });
-        break;
-          }
-      }
-      
-      viewEmployee();
+                {
+                  first_name: answer.firstName,
+                  last_name: answer.lastName,
+                  role_id: roleId,
+                  manager_id: managerId
 
+                },
+                function(err){
+                  if(err) throw err;
+                  viewEmployee();
+                });
+          });
     })
-})
-}
-
-managerChoice = () => {
-  db.query("SELECT * FROM employee", function(err, res){
-    if(err) throw err;
-    let employeeList = [];
-    for(let i = 0; i < res.length; i++){
-      employeeList.push(res[i].first_name + res[i].last_name)
-    }
   })
-  return employeeList;
 }
 
 
 viewEmployee = () => {
-  db.query("SELECT * FROM employee", function(err, res){
-    if(err) throw err;
+  db.query("SELECT * FROM employee", function (err, res) {
+    if (err) throw err;
     console.table(res)
+    mainFunction();
   })
 }
 
 updateEmployee = () => {
+  db.query("SELECT FROM employee", function(err, res){
+    if(err) throw err;
+    let employees = []
+    for(let i = 0; i < res.length; i++){
+      employees.push(res[i].firstName +" "+res[i].last_name)
+    }
+    inquirer
+    .prompt([
+      {
+        name: "person",
+        type: "rawlist",
+        message: "Which employee would you like to update?",
+        choices: employees
+  
+      },
+      {
+        name: "information",
+        type: "rawlist",
+        message: "What would you like to update?",
+        choices: ["Full Name", "First Name", "Last Name", "Role", "Manager", "Salary", "All", "Exit"]
+      }
+    ])
+    
+    .then(function (answer) {
+        let employeeID
+        for (let i = 0; i < employees.length; i++){
+          if(employees[i] === answer.person){
+            employeeID = res[i].id
+          }
+          switch(answer.information){
+            case "Full Name":
+              inquirer
+              .prompt(
+              [
+                {
+                  name: "fullName",
+                  type: "input",
+                  message: "What is this employees new full name?",
+                  validate: async (input) => {
+                    const words = input.split(' ')
+                    if (words.length !== 2) {
+                       return 'Please put space between first and last name';
+                    }
+                    return true;
+                 }
 
+                }
+                .then(function(answer){
+                  const words = answer.fullName.split(' ');
+                  db.query("UPDATE employee SET ? WHERE ?", 
+                  [
+                    {
+                      first_name: words[0],
+                      last_name: words[1]
+                    },
+                    {
+                      id: employeeID
+                    }
+                  ], 
+                  function(err){
+                    if(err) throw err;
+                  })
+                })
+  
+              ])
+          }
+        }
+    })
+
+  })
+  
 }
 
