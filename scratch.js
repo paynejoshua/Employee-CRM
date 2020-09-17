@@ -1,45 +1,35 @@
-addRole = () => {
-  db.query("SELECT * FROM departments", function (err, res) {
-    if(err) throw err;
-    let departmentChoice = [];
-    for (let i = 0; i < res.length; i++) {
-      departmentChoice.push(res[i].department);
+inquirer
+.prompt(
+[
+  {
+    name: "fullName",
+    type: "input",
+    message: "What is this employees new full name?",
+  //   validate: (input) => {
+  //     return new Promise((resolve, reject)=> {
+  //       const words = input.split(' ')
+  //       if (words.length !== 2) {
+  //          reject('Please put space between first and last name');
+  //       }
+  //       resolve(true);
+  //     })
+      
+  //  }
+  }
+])
+.then(function(answer){
+  const words = answer.fullName.split(' ');
+  db.query("UPDATE employee SET ? WHERE ?", 
+  [
+    {
+      first_name: words[0],
+      last_name: words[1]
+    },
+    {
+      id: employeeID
     }
-    inquirer
-      .prompt(
-        [
-          {
-            name: "role",
-            type: "input",
-            message: "What is the name of the new role?"
-          },
-          {
-            name: "salary",
-            type: "input",
-            message: "What is the salary for this role?"
-          },
-          {
-            name: "department_ID",
-            type: "list",
-            message: "What department does this role belong to?",
-            choices: departmentChoice
-          }
-        ]
-      )
-      .then(function (answer) {
-        for (let i = 0; i < res.length; i++) {
-          if (res[i].department === answer.department_ID) {
-            db.query("INSERT INTO role SET ?",
-              {
-                title: answer.role,
-                salary: answer.salary,
-                department_id: res[i].id
-
-              });
-            break;
-          }
-        }
-        viewRole();
-      })
+  ], 
+  function(err){
+    if(err) throw err;
   })
-}
+})

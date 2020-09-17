@@ -324,40 +324,36 @@ addEmployee = () => {
           ]
         )
         .then(function (answer) {
-            let roleId;
-            let managerId;
-            // Match the role
-            for (let i = 0; i < res.length; i++)
-            {
-                if (res[i].title === answer.role)
-                {
-                    roleId = res[i].id;
-                    break;
-                }
+          let roleId;
+          let managerId;
+          // Match the role
+          for (let i = 0; i < res.length; i++) {
+            if (res[i].title === answer.role) {
+              roleId = res[i].id;
+              break;
             }
-            // Match the manager
-            for (let i = 0; i < employees.length; i++)
-            {
-                let managerName = employees[i].first_name +" "+ employees[i].last_name;
-                if (managerName === answer.manager)
-                {
-                    managerId = employees[i].id;
-                    break;
-                }
+          }
+          // Match the manager
+          for (let i = 0; i < employees.length; i++) {
+            let managerName = employees[i].first_name + " " + employees[i].last_name;
+            if (managerName === answer.manager) {
+              managerId = employees[i].id;
+              break;
             }
-              db.query("INSERT INTO employee SET ?",
-                {
-                  first_name: answer.firstName,
-                  last_name: answer.lastName,
-                  role_id: roleId,
-                  manager_id: managerId
+          }
+          db.query("INSERT INTO employee SET ?",
+            {
+              first_name: answer.firstName,
+              last_name: answer.lastName,
+              role_id: roleId,
+              manager_id: managerId
 
-                },
-                function(err){
-                  if(err) throw err;
-                  viewEmployee();
-                });
-          });
+            },
+            function (err) {
+              if (err) throw err;
+              viewEmployee();
+            });
+        });
     })
   })
 }
@@ -372,76 +368,122 @@ viewEmployee = () => {
 }
 
 updateEmployee = () => {
-  db.query("SELECT FROM employee", function(err, res){
-    if(err) throw err;
+  db.query("SELECT * FROM employee", function (err, res) {
+    if (err) throw err;
     let employees = []
-    for(let i = 0; i < res.length; i++){
-      employees.push(res[i].firstName +" "+res[i].last_name)
+    for (let i = 0; i < res.length; i++) {
+      employees.push(res[i].first_name + " " + res[i].last_name)
     }
     inquirer
-    .prompt([
-      {
-        name: "person",
-        type: "rawlist",
-        message: "Which employee would you like to update?",
-        choices: employees
-  
-      },
-      {
-        name: "information",
-        type: "rawlist",
-        message: "What would you like to update?",
-        choices: ["Full Name", "First Name", "Last Name", "Role", "Manager", "Salary", "All", "Exit"]
-      }
-    ])
-    
-    .then(function (answer) {
-        let employeeID
-        for (let i = 0; i < employees.length; i++){
-          if(employees[i] === answer.person){
-            employeeID = res[i].id
-          }
-          switch(answer.information){
-            case "Full Name":
-              inquirer
-              .prompt(
-              [
-                {
-                  name: "fullName",
-                  type: "input",
-                  message: "What is this employees new full name?",
-                  validate: async (input) => {
-                    const words = input.split(' ')
-                    if (words.length !== 2) {
-                       return 'Please put space between first and last name';
-                    }
-                    return true;
-                 }
+      .prompt([
+        {
+          name: "person",
+          type: "rawlist",
+          message: "Which employee would you like to update?",
+          choices: employees
 
-                }
-                .then(function(answer){
-                  const words = answer.fullName.split(' ');
-                  db.query("UPDATE employee SET ? WHERE ?", 
-                  [
+        },
+        {
+          name: "information",
+          type: "rawlist",
+          message: "What would you like to update?",
+          choices: ["Full Name", "First Name", "Last Name", "Role", "Manager", "Salary", "All", "Exit"]
+        },
+      ])
+      .then(function (answer) {
+        let employeeID
+        for (let i = 0; i < employees.length; i++) {
+          if (employees[i] === answer.person) {
+            employeeID = res[i].id;
+            console.log(answer.information)
+            switch (answer.information) {
+              case "Full Name":
+              inquirer
+                  .prompt([
                     {
-                      first_name: words[0],
-                      last_name: words[1]
-                    },
-                    {
-                      id: employeeID
-                    }
-                  ], 
-                  function(err){
-                    if(err) throw err;
-                  })
-                })
+                      name: "fullName",
+                      type: "input",
+                      message: "What is this employees new full name?"
+                      //   validate: (input) => {
+                      //     return new Promise((resolve, reject)=> {
+                      //       const words = input.split(' ')
+                      //       if (words.length !== 2) {
+                      //          reject('Please put space between first and last name');
+                      //       }
+                      //       resolve(true);
+                      //     })
   
-              ])
+                      //  }
+                    }
+                  ])
+                  .then(function (answer) {
+                    const words = answer.fullName.split(' ');
+                    db.query("UPDATE employee SET ? WHERE ?",
+                      [
+                        {
+                          first_name: words[0],
+                          last_name: words[1]
+                        },
+                        {
+                          id: employeeID
+                        }
+                      ],
+                      function (err) {
+                        if (err) throw err;
+                      })
+                      viewEmployee();
+                  })
+                  break;
+                default:
+                  break;
+  
+          }
+          // console.log(answer.information)
+          // switch (answer.information) {
+          //   case "Full Name":
+          //     console.log("inside case Full Name");
+          //     answer.information = '';
+          //     break;
+          //   // inquirer
+          //   //     .prompt([
+          //   //       {
+          //   //         name: "fullName",
+          //   //         type: "input",
+          //   //         message: "What is this employees new full name?"
+          //   //         //   validate: (input) => {
+          //   //         //     return new Promise((resolve, reject)=> {
+          //   //         //       const words = input.split(' ')
+          //   //         //       if (words.length !== 2) {
+          //   //         //          reject('Please put space between first and last name');
+          //   //         //       }
+          //   //         //       resolve(true);
+          //   //         //     })
+
+          //   //         //  }
+          //   //       }
+          //   //     ])
+          //   //     .then(function (answer) {
+          //   //       const words = answer.fullName.split(' ');
+          //   //       db.query("UPDATE employee SET ? WHERE ?",
+          //   //         [
+          //   //           {
+          //   //             first_name: words[0],
+          //   //             last_name: words[1]
+          //   //           },
+          //   //           {
+          //   //             id: employeeID
+          //   //           }
+          //   //         ],
+          //   //         function (err) {
+          //   //           if (err) throw err;
+          //   //         })
+          //   //     })
+          //   //     break;
+          //   //   default:
+          //   //     break;
           }
         }
+      })
     })
-
-  })
-  
 }
 
