@@ -390,6 +390,7 @@ updateEmployee = () => {
           choices: ["Full Name", "First Name", "Last Name", "Role", "Manager", "Salary", "All", "Exit"]
         },
       ])
+
       .then(function (answer) {
         let employeeID
         for (let i = 0; i < employees.length; i++) {
@@ -478,10 +479,55 @@ updateEmployee = () => {
                   viewEmployee();
                 })
                 break;
-          }
+                case "Role":
+                  db.query("SELECT * FROM role", function(err, role){
+                    if(err) throw err;
+                    let roleChoice = []
+                    for(let i = 0; i < role.length; i++){
+                      roleChoice.push(role[i].title)
+                    }
+                    inquirer
+                    .prompt(
+                      [
+                        {
+                          name: "newRole",
+                          type: "rawlist",
+                          messages: "What is this employees new role?",
+                          choices: roleChoice
+                        }
+                      ]
+                    )
+                    .then(function(answer){
+                      let roleID;
+                      for (let i = 0; i < role.length; i++){
+                        if(role[i].title === answer.newRole){
+                          roleID = role[i].id
+                          console.log(roleID)
+                          db.query("UPDATE employee SET ? WHERE ?",
+                          [
+                            {
+                              role_id: roleID
+                            },
+                            {
+                              id: employeeID
+                            }
+                          ],
+                          function(err){
+                            if(err) throw err;
+                          })
+                          viewEmployee();
+                        }
+                      }
+                    })
+                  })
+                  break;
+                  // next line is end of switch
+                }
           }
         }
       })
     })
+
 }
+
 
