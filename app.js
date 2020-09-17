@@ -452,6 +452,32 @@ updateEmployee = () => {
                   viewEmployee();
                 })
                 break;
+                case "Last Name":
+                  inquirer
+                .prompt([
+                  {
+                    name: "lastName",
+                    type: "input",
+                    message: "What is this employees new last name?"
+                  }
+                ])
+                .then(function (answer){
+                  db.query("UPDATE employee SET ? WHERE ?",
+                  [
+                    {
+                      last_name: answer.lastName
+                    },
+                    {
+                      id: employeeID
+                    }
+                    
+                  ],
+                  function (err) {
+                    if(err) throw err;
+                  })
+                  viewEmployee();
+                })
+                break;
           }
           }
         }
