@@ -34,6 +34,7 @@ mainFunction = () => {
           "Add Employee",
           "View Employees",
           "Update Employee",
+          "Remove Employee",
           "Exit"
         ]
       }).then(answers => {
@@ -61,6 +62,9 @@ mainFunction = () => {
             break;
           case "Update Employee":
             updateEmployee();
+            break;
+          case "Remove Employee":
+            removeEmployee();
             break;
           case "Exit":
             db.end();
@@ -542,21 +546,18 @@ updateEmployee = () => {
                         function (err, res) {
                           if (err) throw err;
                           managerID = res[0].id
+                          console.log(managerID, "Manager ID")
+                          console.log(employeeID, "Employee ID")
                           db.query("UPDATE employee SET manager_id = ? WHERE id = ?",
                             [
-                              {
-                                manager_id: managerID
-                              },
-                              {
-                                id: employeeID
-                              }
+                              managerID, employeeID
                             ],
                             function (err) {
                               if (err) throw err;
+                              viewEmployee();
                             })
                         })
                     }
-                    viewEmployee();
                   })
                 break;
               case "Exit":
@@ -569,6 +570,45 @@ updateEmployee = () => {
       })
   })
 
+}
+
+removeEmployee = () => {
+  db.query("SELECT * FROM employee", function(err, res){
+    if (err) throw err;
+    let employees = []
+    let employeeID
+    for (let i = 0; i < res.length; i++){
+      employees.push(res[i].first_name +" "+ res[i].last_name)
+      employeeID = res[i].id
+    }
+    inquirer
+    .prompt(
+      [
+        {
+          name: "removeEmployee",
+          type: "rawlist",
+          message: "Which employee would you like to remove?",
+          choices: employees
+        }
+      ]
+      )
+    .then(function(answers){
+      if(employees.includes(answers.removeEmployee)){
+        db.query("DELETE FROM employee WHERE id = ?", 
+      [
+          
+            id = employeeID
+          
+        
+      ], 
+      function(err){
+        if(err) throw err;
+        viewEmployee()
+        mainFunction();
+      })
+      }
+    })
+  })
 }
 
 
