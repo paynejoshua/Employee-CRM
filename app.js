@@ -387,7 +387,7 @@ updateEmployee = () => {
           name: "information",
           type: "rawlist",
           message: "What would you like to update?",
-          choices: ["Full Name", "First Name", "Last Name", "Role", "Manager", "Salary", "All", "Exit"]
+          choices: ["Full Name", "First Name", "Last Name", "Role", "Manager", "Exit"]
         },
       ])
 
@@ -399,7 +399,7 @@ updateEmployee = () => {
             console.log(answer.information)
             switch (answer.information) {
               case "Full Name":
-              inquirer
+                inquirer
                   .prompt([
                     {
                       name: "fullName",
@@ -422,112 +422,156 @@ updateEmployee = () => {
                       function (err) {
                         if (err) throw err;
                       })
-                      viewEmployee();
+                    viewEmployee();
                   })
-                  break;
-                default:
-                  break;
+                break;
+              default:
+                break;
               case "First Name":
                 inquirer
-                .prompt([
-                  {
-                    name: "firstName",
-                    type: "input",
-                    message: "What is this employees new first name?"
-                  }
-                ])
-                .then(function (answer){
-                  db.query("UPDATE employee SET ? WHERE ?",
-                  [
+                  .prompt([
                     {
-                      first_name: answer.firstName
-                    },
-                    {
-                      id: employeeID
+                      name: "firstName",
+                      type: "input",
+                      message: "What is this employees new first name?"
                     }
-                    
-                  ],
-                  function (err) {
-                    if(err) throw err;
+                  ])
+                  .then(function (answer) {
+                    db.query("UPDATE employee SET ? WHERE ?",
+                      [
+                        {
+                          first_name: answer.firstName
+                        },
+                        {
+                          id: employeeID
+                        }
+
+                      ],
+                      function (err) {
+                        if (err) throw err;
+                      })
+                    viewEmployee();
                   })
-                  viewEmployee();
-                })
                 break;
-                case "Last Name":
+              case "Last Name":
+                inquirer
+                  .prompt([
+                    {
+                      name: "lastName",
+                      type: "input",
+                      message: "What is this employees new last name?"
+                    }
+                  ])
+                  .then(function (answer) {
+                    db.query("UPDATE employee SET ? WHERE ?",
+                      [
+                        {
+                          last_name: answer.lastName
+                        },
+                        {
+                          id: employeeID
+                        }
+
+                      ],
+                      function (err) {
+                        if (err) throw err;
+                      })
+                    viewEmployee();
+                  })
+                break;
+              case "Role":
+                db.query("SELECT * FROM role", function (err, role) {
+                  if (err) throw err;
+                  let roleChoice = []
+                  for (let i = 0; i < role.length; i++) {
+                    roleChoice.push(role[i].title)
+                  }
                   inquirer
-                .prompt([
-                  {
-                    name: "lastName",
-                    type: "input",
-                    message: "What is this employees new last name?"
-                  }
-                ])
-                .then(function (answer){
-                  db.query("UPDATE employee SET ? WHERE ?",
-                  [
-                    {
-                      last_name: answer.lastName
-                    },
-                    {
-                      id: employeeID
-                    }
-                    
-                  ],
-                  function (err) {
-                    if(err) throw err;
-                  })
-                  viewEmployee();
-                })
-                break;
-                case "Role":
-                  db.query("SELECT * FROM role", function(err, role){
-                    if(err) throw err;
-                    let roleChoice = []
-                    for(let i = 0; i < role.length; i++){
-                      roleChoice.push(role[i].title)
-                    }
-                    inquirer
                     .prompt(
                       [
                         {
                           name: "newRole",
                           type: "rawlist",
-                          messages: "What is this employees new role?",
+                          message: "What is this employees new role?",
                           choices: roleChoice
                         }
                       ]
                     )
-                    .then(function(answer){
+                    .then(function (answer) {
                       let roleID;
-                      for (let i = 0; i < role.length; i++){
-                        if(role[i].title === answer.newRole){
+                      for (let i = 0; i < role.length; i++) {
+                        if (role[i].title === answer.newRole) {
                           roleID = role[i].id
                           console.log(roleID)
                           db.query("UPDATE employee SET ? WHERE ?",
-                          [
-                            {
-                              role_id: roleID
-                            },
-                            {
-                              id: employeeID
-                            }
-                          ],
-                          function(err){
-                            if(err) throw err;
-                          })
+                            [
+                              {
+                                role_id: roleID
+                              },
+                              {
+                                id: employeeID
+                              }
+                            ],
+                            function (err) {
+                              if (err) throw err;
+                            })
                           viewEmployee();
                         }
                       }
                     })
+                })
+                break;
+              case "Manager":
+                inquirer
+                  .prompt(
+                    [
+                      {
+                        name: "newManager",
+                        type: "rawlist",
+                        message: "Who is this employees new manager?",
+                        choices: employees
+                      }
+                    ]
+                  )
+                  .then(function (answer) {
+                    let managerID;
+                    if (employees.includes(answer.newManager)){
+                      let splitName = answer.newManager.split(' ')
+                      db.query("SELECT * FROM employee WHERE first_name = ? AND last_name = ?",
+                        splitName,
+                        function (err, res) {
+                          if (err) throw err;
+                          managerID = res[0].id
+                          db.query("UPDATE employee SET manager_id = ? WHERE id = ?",
+                            [
+                              {
+                                manager_id: managerID
+                              },
+                              {
+                                id: employeeID
+                              }
+                            ],
+                            function (err) {
+                              if (err) throw err;
+                            })
+                        })
+                    }
+                    viewEmployee();
                   })
-                  break;
-                  // next line is end of switch
-                }
+                break;
+              case "Exit":
+                mainFunction();
+                break;
+              // next line is end of switch
+            }
           }
         }
       })
-    })
+  })
 
 }
+
+
+
 
 
