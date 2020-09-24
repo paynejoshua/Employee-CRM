@@ -26,15 +26,15 @@ mainFunction = () => {
         type: "rawlist",
         message: "What would you like to do?",
         choices: [
-          "Add New Department",
-          "View Departments",
-          "Add Role",
-          "View Roles",
-          "Update Role",
-          "Add Employee",
           "View Employees",
+          "Add Employee",
           "Update Employee",
-          "Remove Employee",
+          "View Departments",
+          "Add New Department",
+          "View Roles",
+          "Add Role",
+          "Update Role",
+          // "Remove Employee",
           "Exit"
         ]
       }).then(answers => {
@@ -63,9 +63,9 @@ mainFunction = () => {
           case "Update Employee":
             updateEmployee();
             break;
-          case "Remove Employee":
-            removeEmployee();
-            break;
+          // case "Remove Employee":
+          //   removeEmployee();
+          //   break;
           case "Exit":
             db.end();
             break;
@@ -80,6 +80,7 @@ addDepartment = () => {
         name: "department",
         type: "input",
         message: "What is the name of the new department?"
+        
       }
     ])
     .then(function (answer) {
@@ -88,6 +89,7 @@ addDepartment = () => {
           department: answer.department
 
         });
+        
       viewDepartment();
 
     })
@@ -572,44 +574,66 @@ updateEmployee = () => {
 
 }
 
-removeEmployee = () => {
-  db.query("SELECT * FROM employee", function(err, res){
-    if (err) throw err;
-    let employees = []
-    let employeeID
-    for (let i = 0; i < res.length; i++){
-      employees.push(res[i].first_name +" "+ res[i].last_name)
-      employeeID = res[i].id
-    }
-    inquirer
-    .prompt(
-      [
-        {
-          name: "removeEmployee",
-          type: "rawlist",
-          message: "Which employee would you like to remove?",
-          choices: employees
-        }
-      ]
-      )
-    .then(function(answers){
-      if(employees.includes(answers.removeEmployee)){
-        db.query("DELETE FROM employee WHERE id = ?", 
-      [
+// removeEmployee = () => {
+//   db.query("SELECT * FROM employee", function(err, res){
+//     if (err) throw err;
+//     let employees = []
+//     let employeeID
+//     for (let i = 0; i < res.length; i++){
+//       employees.push(res[i].first_name +" "+ res[i].last_name)
+//       employeeID = res[i].id
+//     }
+//     inquirer
+//     .prompt(
+//       [
+//         {
+//           name: "removeEmployee",
+//           type: "rawlist",
+//           message: "Which employee would you like to remove?",
+//           choices: employees
+//         }
+//       ]
+//       )
+//     .then(function(answers){
+//       if(employees.includes(answers.removeEmployee)){
+//         db.query("DELETE FROM employee WHERE id = ?", 
+//       [
           
-            id = employeeID
+//             id = employeeID
           
         
-      ], 
-      function(err){
-        if(err) throw err;
-        viewEmployee()
-        mainFunction();
-      })
-      }
-    })
-  })
-}
+//       ], 
+//       function(err){
+//         if(err) throw err;
+//         // resetID();
+//         viewEmployee();
+//         mainFunction();
+//       })
+//       }
+//     })
+//   })
+// }
+
+// resetID = () => {
+//   let id = [];
+//   let nextID
+//   db.query("SELECT * FROM employee", function (err, res) {
+//     if (err) throw err;
+//     for (let i = 0; i < res.length; i++) {
+//       id.push(res[i].id);
+//       nextID = id[id.length - 1] + 1;
+//       console.log(id, "All ID's")
+//       console.log(nextID, "Next ID")
+//     }
+
+//   })
+//   db.query(`ALTER TABLE employee AUTO_INCREMENT = ${nextID}`, function (err) {
+//     if (err) throw err;
+//   })
+
+// }
+
+
 
 
 
